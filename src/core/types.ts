@@ -31,4 +31,5 @@ export type Subscription = {
   planName: string;
   category: PlanCategory;
   startedAt: number;
+  active?: boolean;
 };

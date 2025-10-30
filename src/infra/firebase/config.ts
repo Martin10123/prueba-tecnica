@@ -1,11 +1,15 @@
 import Constants from "expo-constants";
 import { initializeApp } from "firebase/app";
 import {
-  browserLocalPersistence,
   getAuth,
+  initializeAuth,
+  getReactNativePersistence,
   setPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Obtener variables de entorno desde expo-constants
 const getEnvVar = (key: string, fallback: string): string => {
@@ -35,13 +39,17 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
 
-// Configurar persistencia para mantener la sesión al recargar la página
-if (typeof window !== "undefined") {
-  setPersistence(auth, browserLocalPersistence).catch(() => {
-    // Ignorar errores si ya está configurado
+// Auth para Web vs Nativo (React Native)
+let authInstance;
+if (Platform.OS !== "web") {
+  authInstance = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
   });
+} else {
+  authInstance = getAuth(app);
+  setPersistence(authInstance, browserLocalPersistence).catch(() => {});
 }
 
+export const auth = authInstance;
 export const db = getFirestore(app);

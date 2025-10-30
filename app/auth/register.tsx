@@ -1,8 +1,8 @@
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { useUser } from '../../core/user/UserProvider';
-import { Button, Input, Text, colors } from '../../ui/atoms';
+import { useUser } from '../../src/core/user/UserProvider';
+import { Button, Input, Text, colors } from '../../src/ui/atoms';
 
 export default function RegisterScreen() {
     const { register, loading } = useUser();
@@ -39,5 +39,6 @@ const styles = StyleSheet.create({
     title: { marginBottom: 4 },
     hint: { color: colors.muted, marginTop: 6 },
 });
+
 
 

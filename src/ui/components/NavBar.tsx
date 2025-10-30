@@ -11,7 +11,6 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-    { label: 'Inicio', icon: '🏠', path: '/' },
     { label: 'Planes', icon: '💎', path: '/plans' },
     { label: 'Perfil', icon: '👤', path: '/profile' },
 ];

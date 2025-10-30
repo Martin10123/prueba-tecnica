@@ -1,9 +1,11 @@
 import { Link } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { fetchPlans } from '../../../core/plans/service';
-import { Plan, PlanCategory } from '../../../core/types';
-import { Button, Text, colors } from '../../../ui/atoms';
+import { fetchPlans } from '../../../src/core/plans/service';
+import { Plan, PlanCategory } from '../../../src/core/types';
+import { Button, Text, colors } from '../../../src/ui/atoms';
+
+const formatCOP = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
 
 export default function PlansListScreen() {
     const [plans, setPlans] = useState<Plan[]>([]);
@@ -60,7 +62,7 @@ export default function PlansListScreen() {
                     <Link asChild href={`/plans/${item.id}`}>
                         <Pressable style={styles.card}>
                             <Text variant="h1" style={styles.title}>{item.imageEmoji} {item.name}</Text>
-                            <Text style={styles.price}>{billing === 'monthly' ? `$${item.priceMonthly.toFixed(2)}/mes` : `$${item.priceYearly.toFixed(2)}/mes · anual`}</Text>
+                            <Text style={styles.price}>{billing === 'monthly' ? `${formatCOP(item.priceMonthly)}/mes` : `${formatCOP(item.priceYearly)}/mes · anual`}</Text>
                             <Text style={styles.desc}>{item.description}</Text>
                             <View style={styles.features}>
                                 {item.features.slice(0, 3).map((f) => (
@@ -86,5 +88,6 @@ const styles = StyleSheet.create({
     desc: { color: colors.muted, marginBottom: 8 },
     features: { gap: 2 },
 });
+
 
 

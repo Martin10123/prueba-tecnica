@@ -46,6 +46,7 @@ export async function listSubscriptions(
       planName: v.planName,
       category: v.category,
       startedAt: (v.startedAt?.toMillis?.() ?? Date.now()) as number,
+      active: Boolean(v.active !== false),
     } as Subscription;
   });
   // Sort in-memory to avoid requiring a composite index
@@ -76,6 +77,20 @@ export async function deactivateByPlanId(
   await Promise.all(ops);
 }
 
+export async function deactivateByCategory(
+  uid: string,
+  category: PlanCategory
+): Promise<void> {
+  const ref = collection(db, "users", uid, "subscriptions");
+  const snaps = await getDocs(
+    query(ref, where("category", "==", category), where("active", "==", true))
+  );
+  const ops = snaps.docs.map((d) =>
+    updateDoc(doc(db, "users", uid, "subscriptions", d.id), { active: false })
+  );
+  await Promise.all(ops);
+}
+
 export function listenSubscriptions(
   uid: string,
   callback: (subs: Subscription[]) => void
@@ -91,6 +106,7 @@ export function listenSubscriptions(
           planName: v.planName,
           category: v.category,
           startedAt: (v.startedAt?.toMillis?.() ?? Date.now()) as number,
+          active: true,
         } as Subscription;
       })
       .sort((a, b) => b.startedAt - a.startedAt);

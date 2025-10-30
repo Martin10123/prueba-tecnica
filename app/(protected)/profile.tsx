@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { fetchPlans } from '../../core/plans/service';
-import { Plan, PlanCategory } from '../../core/types';
-import { useUser } from '../../core/user/UserProvider';
-import { Button, Text, colors } from '../../ui/atoms';
-import ActionToast from '../../ui/atoms/ActionToast';
-import Avatar from '../../ui/atoms/Avatar';
-import ConfirmModal from '../../ui/atoms/ConfirmModal';
+import { fetchPlans } from '../../src/core/plans/service';
+import { Plan, PlanCategory } from '../../src/core/types';
+import { useUser } from '../../src/core/user/UserProvider';
+import { listSubscriptions } from '../../src/core/subscriptions/service';
+import { Button, Text } from '../../src/ui/atoms';
+import { colors } from '../../src/ui/atoms/colors';
+import ActionToast from '../../src/ui/atoms/ActionToast';
+import Avatar from '../../src/ui/atoms/Avatar';
+import ConfirmModal from '../../src/ui/atoms/ConfirmModal';
 
 const categoryIcons: Record<PlanCategory, string> = {
     fitness: '💪',
@@ -25,6 +27,8 @@ const categoryLabels: Record<PlanCategory, string> = {
     digital: 'Servicios',
 };
 
+const formatCOP = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+
 export default function ProfileScreen() {
     const { user, cancel, logout, cancelPlan } = useUser();
     const [busy, setBusy] = useState<string | null>(null);
@@ -39,6 +43,7 @@ export default function ProfileScreen() {
         action: undefined
     });
     const [plansById, setPlansById] = useState<Record<string, Plan>>({});
+    const [inactiveSubs, setInactiveSubs] = useState<any[]>([]);
 
     const groupedSubs = useMemo(() => {
         const groups: Record<string, any[]> = {};
@@ -65,6 +70,17 @@ export default function ProfileScreen() {
         })();
     }, []);
 
+    useEffect(() => {
+        (async () => {
+            if (!user?.id) return;
+            try {
+                const all = await listSubscriptions(user.id, false);
+                const inact = all.filter(s => s.active === false);
+                setInactiveSubs(inact);
+            } catch { setInactiveSubs([]); }
+        })();
+    }, [user?.id]);
+
     const totalMonthly = useMemo(() => {
         const subs = user?.subscriptions ?? [];
         let sum = 0;
@@ -77,11 +93,9 @@ export default function ProfileScreen() {
 
     function showConfirm(message: string, run: () => Promise<void>) {
         if (Platform.OS === 'web') {
-            // En web no se usa confirmación personalizada, ejecuta directamente
             run();
             return;
         }
-        // Guardar la acción y mostrar el modal
         setConfirmState({ visible: true, message, action: run });
     }
 
@@ -109,8 +123,13 @@ export default function ProfileScreen() {
         });
     };
 
+    const styles = React.useMemo(() => createStyles(), []);
+
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+            <View style={styles.topBar}>
+                <Button title="← Volver" variant="secondary" onPress={() => router.back()} />
+            </View>
             <View style={styles.header}>
                 <Avatar name={user?.name || 'Usuario'} size={100} />
                 <Text variant="h1" style={styles.name}>
@@ -131,7 +150,7 @@ export default function ProfileScreen() {
                 {user?.subscriptions && user.subscriptions.length > 0 ? (
                     <View style={styles.totalBox}>
                         <Text style={styles.totalLabel}>Total mensual</Text>
-                        <Text variant="h1">${totalMonthly.toFixed(2)}</Text>
+                        <Text variant="h1">{formatCOP(totalMonthly)}</Text>
                     </View>
                 ) : null}
             </View>
@@ -195,6 +214,27 @@ export default function ProfileScreen() {
                         onPress={() => router.push('/plans')}
                         style={styles.emptyButton}
                     />
+                </View>
+            )}
+
+            {inactiveSubs.length > 0 && (
+                <View style={{ marginTop: 16 }}>
+                    <Text variant="h2" style={styles.sectionTitle}>Historial</Text>
+                    {inactiveSubs.map((sub) => (
+                        <View key={`inactive-${sub.planId}-${sub.startedAt}`} style={styles.planCard}>
+                            <View style={styles.planCardHeader}>
+                                <View style={styles.planCardLeft}>
+                                    <Text variant="h3" style={styles.planName}>{sub.planName}</Text>
+                                    <Text style={styles.planDate}>Desde {formatDate(sub.startedAt)}</Text>
+                                </View>
+                                <View style={styles.planCardRight}>
+                                    <View style={[styles.activeBadge, { backgroundColor: '#F3F4F6' }]}>
+                                        <Text style={[styles.activeBadgeText, { color: '#374151' }]}>Inactivo</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    ))}
                 </View>
             )}
 
@@ -268,159 +308,41 @@ export default function ProfileScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.lightBlue,
-    },
-    content: {
-        padding: 20,
-        paddingBottom: 100,
-    },
-    header: {
-        alignItems: 'center',
-        paddingVertical: 24,
-        marginBottom: 24,
-    },
-    name: {
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    email: {
-        color: colors.muted,
-        fontSize: 14,
-        marginBottom: 12,
-    },
-    statusBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.white,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    statusDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: 6,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: colors.text,
-    },
-    totalBox: {
-        marginTop: 12,
-        backgroundColor: colors.white,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 12,
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        alignItems: 'center',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.05)' as any,
-    },
-    totalLabel: {
-        color: colors.muted,
-        marginBottom: 4,
-        fontWeight: '600',
-    },
-    subscriptionsSection: {
-        marginBottom: 24,
-    },
-    sectionTitle: {
-        marginBottom: 16,
-        color: colors.text,
-    },
-    categoryGroup: {
-        marginBottom: 20,
-    },
-    categoryHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    categoryIcon: {
-        fontSize: 24,
-        marginRight: 8,
-    },
-    categoryTitle: {
-        color: colors.text,
-    },
-    planCard: {
-        backgroundColor: colors.white,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: colors.border,
-        boxShadow: '0 2px 6px rgba(0,0,0,0.05)' as any,
-    },
-    planCardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 12,
-    },
-    planCardLeft: {
-        flex: 1,
-    },
-    planCardRight: {
-        marginLeft: 12,
-    },
-    planName: {
-        marginBottom: 4,
-        color: colors.text,
-    },
-    planDate: {
-        fontSize: 12,
-        color: colors.muted,
-    },
-    activeBadge: {
-        backgroundColor: '#D1FAE5',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    activeBadgeText: {
-        color: '#065F46',
-        fontSize: 11,
-        fontWeight: '700',
-    },
-    cancelButton: {
-        marginTop: 0,
-    },
-    emptyState: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 48,
-        paddingHorizontal: 24,
-    },
-    emptyIcon: {
-        fontSize: 64,
-        marginBottom: 16,
-    },
-    emptyTitle: {
-        marginBottom: 8,
-        color: colors.text,
-    },
-    emptyText: {
-        textAlign: 'center',
-        color: colors.muted,
-        marginBottom: 24,
-        lineHeight: 20,
-    },
-    emptyButton: {
-        minWidth: 200,
-    },
-    actionsSection: {
-        marginTop: 24,
-        gap: 12,
-    },
-    actionButton: {
-        marginTop: 0,
-    },
-});
+function createStyles() {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: colors.lightBlue },
+        content: { padding: 20, paddingBottom: 100 },
+        topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+        header: { alignItems: 'center', paddingVertical: 24, marginBottom: 24 },
+        name: { marginTop: 16, marginBottom: 8 },
+        email: { color: colors.muted, fontSize: 14, marginBottom: 12 },
+        statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: colors.border },
+        statusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
+        statusText: { fontSize: 12, fontWeight: '600', color: colors.text },
+        totalBox: { marginTop: 12, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' as any },
+        totalLabel: { color: colors.muted, marginBottom: 4, fontWeight: '600' },
+        subscriptionsSection: { marginBottom: 24 },
+        sectionTitle: { marginBottom: 16, color: colors.text },
+        categoryGroup: { marginBottom: 20 },
+        categoryHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+        categoryIcon: { fontSize: 24, marginRight: 8 },
+        categoryTitle: { color: colors.text },
+        planCard: { backgroundColor: colors.white, borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border, boxShadow: '0 2px 6px rgba(0,0,0,0.05)' as any },
+        planCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+        planCardLeft: { flex: 1 },
+        planCardRight: { marginLeft: 12 },
+        planName: { marginBottom: 4, color: colors.text },
+        planDate: { fontSize: 12, color: colors.muted },
+        activeBadge: { backgroundColor: '#D1FAE5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+        activeBadgeText: { color: '#065F46', fontSize: 11, fontWeight: '700' },
+        cancelButton: { marginTop: 0 },
+        emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 48, paddingHorizontal: 24 },
+        emptyIcon: { fontSize: 64, marginBottom: 16 },
+        emptyTitle: { marginBottom: 8, color: colors.text },
+        emptyText: { textAlign: 'center', color: colors.muted, marginBottom: 24, lineHeight: 20 },
+        emptyButton: { minWidth: 200 },
+        actionsSection: { marginTop: 24, gap: 12 },
+        actionButton: { marginTop: 0 },
+    });
+}
+

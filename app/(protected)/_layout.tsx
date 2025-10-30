@@ -1,9 +1,9 @@
 import { Redirect, Slot } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { useUser } from '../../core/user/UserProvider';
-import { colors } from '../../ui/atoms';
-import NavBar from '../../ui/components/NavBar';
+import { useUser } from '../../src/core/user/UserProvider';
+import { colors } from '../../src/ui/atoms/colors';
+import NavBar from '../../src/ui/components/NavBar';
 
 export default function ProtectedLayout() {
     const { user, loading } = useUser();
@@ -22,6 +22,7 @@ export default function ProtectedLayout() {
 
     return (
         <View style={styles.container}>
+            {/* Theme toggle moved to profile screen */}
             <View style={styles.content}>
                 <Slot />
             </View>
