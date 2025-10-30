@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "688662961003",
+    "project_id": "membership-system-d5b07",
+    "storage_bucket": "membership-system-d5b07.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:688662961003:android:73d7500b6ada9315874a2e",
+        "android_client_info": {
+          "package_name": "com.martin.membership_system"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "688662961003-4npptqtj823ff519k8kbhvsel2tt3gf8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDn1hIChBei85joVUQ6ua67vu2E6Xul4UM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "688662961003-4npptqtj823ff519k8kbhvsel2tt3gf8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
