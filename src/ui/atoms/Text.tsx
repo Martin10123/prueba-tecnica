@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text as RNText, StyleSheet, TextProps } from 'react-native';
 
-type Props = TextProps & { variant?: 'h1' | 'body' };
+type Props = TextProps & { variant?: 'h1' | 'h2' | 'h3' | 'body' };
 
 export default function Text({ children, style, variant = 'body', ...rest }: Props) {
   const variantStyle = variant === 'h1' ? styles.h1 : styles.body;

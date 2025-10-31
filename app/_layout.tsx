@@ -1,11 +1,14 @@
 import { Slot } from 'expo-router';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { UserProvider } from '../src/core/user/UserProvider';
 
 export default function Layout() {
   return (
     <SafeAreaProvider>
-      <Slot />
+      <UserProvider>
+        <Slot />
+      </UserProvider>
     </SafeAreaProvider>
   );
 }
