@@ -114,6 +114,7 @@ La aplicación utiliza Firebase para autenticación y almacenamiento de datos. L
 La aplicación espera las siguientes colecciones en Firestore:
 
 - **`users`**: Documentos de usuarios con estructura:
+
   ```typescript
   {
     name: string;
