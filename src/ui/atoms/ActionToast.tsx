@@ -57,9 +57,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        // Do not block clicks under the toast (web)
         pointerEvents: 'none' as any,
-        // Use web boxShadow instead of shadow* props
         boxShadow: '0 4px 8px rgba(0,0,0,0.08)' as any,
     },
     emoji: { fontSize: 16 },

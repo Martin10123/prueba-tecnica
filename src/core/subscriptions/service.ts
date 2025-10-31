@@ -39,7 +39,7 @@ export async function listSubscriptions(
   const ref = collection(db, "users", uid, "subscriptions");
   const q = onlyActive ? query(ref, where("active", "==", true)) : query(ref);
   const snaps = await getDocs(q);
-  const items = snaps.docs.map((d) => {
+  const items = snaps.docs.map((d: any) => {
     const v = d.data() as any;
     return {
       planId: v.planId,
@@ -49,15 +49,14 @@ export async function listSubscriptions(
       active: Boolean(v.active !== false),
     } as Subscription;
   });
-  // Sort in-memory to avoid requiring a composite index
-  items.sort((a, b) => b.startedAt - a.startedAt);
-  return items;
+
+  return items.sort((a: any, b: any) => b.startedAt - a.startedAt);
 }
 
 export async function deactivateAllSubscriptions(uid: string): Promise<void> {
   const ref = collection(db, "users", uid, "subscriptions");
   const snaps = await getDocs(query(ref, where("active", "==", true)));
-  const ops = snaps.docs.map((d) =>
+  const ops = snaps.docs.map((d: any) =>
     updateDoc(doc(db, "users", uid, "subscriptions", d.id), { active: false })
   );
   await Promise.all(ops);
@@ -71,21 +70,7 @@ export async function deactivateByPlanId(
   const snaps = await getDocs(
     query(ref, where("planId", "==", planId), where("active", "==", true))
   );
-  const ops = snaps.docs.map((d) =>
-    updateDoc(doc(db, "users", uid, "subscriptions", d.id), { active: false })
-  );
-  await Promise.all(ops);
-}
-
-export async function deactivateByCategory(
-  uid: string,
-  category: PlanCategory
-): Promise<void> {
-  const ref = collection(db, "users", uid, "subscriptions");
-  const snaps = await getDocs(
-    query(ref, where("category", "==", category), where("active", "==", true))
-  );
-  const ops = snaps.docs.map((d) =>
+  const ops = snaps.docs.map((d: any) =>
     updateDoc(doc(db, "users", uid, "subscriptions", d.id), { active: false })
   );
   await Promise.all(ops);
@@ -97,9 +82,9 @@ export function listenSubscriptions(
 ) {
   const ref = collection(db, "users", uid, "subscriptions");
   const q = query(ref, where("active", "==", true));
-  return onSnapshot(q, (snap) => {
+  return onSnapshot(q, (snap: any) => {
     const subs: Subscription[] = snap.docs
-      .map((d) => {
+      .map((d: any) => {
         const v = d.data() as any;
         return {
           planId: v.planId,
@@ -109,7 +94,7 @@ export function listenSubscriptions(
           active: true,
         } as Subscription;
       })
-      .sort((a, b) => b.startedAt - a.startedAt);
+      .sort((a: any, b: any) => b.startedAt - a.startedAt);
     callback(subs);
   });
 }

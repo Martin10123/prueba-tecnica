@@ -22,7 +22,6 @@ export default function ProtectedLayout() {
 
     return (
         <View style={styles.container}>
-            {/* Theme toggle moved to profile screen */}
             <View style={styles.content}>
                 <Slot />
             </View>

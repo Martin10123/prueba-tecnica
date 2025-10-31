@@ -1,17 +1,8 @@
 import Constants from "expo-constants";
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  initializeAuth,
-  getReactNativePersistence,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Obtener variables de entorno desde expo-constants
 const getEnvVar = (key: string, fallback: string): string => {
   const value = Constants.expoConfig?.extra?.env?.[key] || process.env[key];
   return value || fallback;
@@ -40,16 +31,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Auth para Web vs Nativo (React Native)
-let authInstance;
-if (Platform.OS !== "web") {
-  authInstance = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-} else {
-  authInstance = getAuth(app);
-  setPersistence(authInstance, browserLocalPersistence).catch(() => {});
-}
-
-export const auth = authInstance;
+export const auth = getAuth(app);
 export const db = getFirestore(app);

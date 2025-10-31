@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { colors } from './colors';
 import Text from './Text';
 
@@ -22,9 +22,6 @@ export default function ConfirmModal({
     onConfirm,
     onCancel,
 }: Props) {
-    // Solo Android/iOS. En web no renderiza nada.
-    if (Platform.OS === 'web') return null;
-
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
             <View style={styles.backdrop}>

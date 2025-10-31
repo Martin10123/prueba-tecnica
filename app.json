@@ -4,9 +4,9 @@
     "slug": "example-react-native",
     "version": "1.0.0",
     "orientation": "portrait",
-    
+
     "scheme": "examplereactnative",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -18,9 +18,7 @@
     "web": {
       "output": "static"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

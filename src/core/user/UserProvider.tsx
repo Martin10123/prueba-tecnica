@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { listenAuth, signInEmail, signOutAll, signUpEmail } from '../auth/firebaseAuth';
 import { login as loginSvc, logout as logoutSvc, register as registerSvc } from '../auth/service';
 import { fetchPlanById } from '../plans/service';
-import { addSubscription, deactivateAllSubscriptions, deactivateByCategory, deactivateByPlanId, listSubscriptions, listenSubscriptions } from '../subscriptions/service';
+import { addSubscription, deactivateAllSubscriptions, deactivateByPlanId, listSubscriptions, listenSubscriptions } from '../subscriptions/service';
 import { User } from '../types';
 
 type UserContextValue = {
@@ -72,7 +72,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             if (user?.id) {
                 const plan = await fetchPlanById(planId);
                 if (plan) {
-                    // Check if user already has an active subscription in this category
                     const hasSameCategory = (user.subscriptions ?? []).some(s => s.category === plan.category);
                     if (hasSameCategory) {
                         throw new Error('Ya tienes un plan activo en esta categoría. Cancela el actual para continuar.');

@@ -53,8 +53,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         justifyContent: 'space-around',
         alignItems: 'center',
-        // Web shadow
-        boxShadow: '0 -2px 8px rgba(0,0,0,0.08)' as any,
     },
     item: {
         alignItems: 'center',
